@@ -1,48 +1,10 @@
-name: Ubuntu xrdp with Ngrok
-
-on:
-  workflow_dispatch:
-    inputs:
-      ngrok_token:
-        description: 'Paste your Ngrok Authtoken'
-        required: true
-      user_password:
-        description: 'Set password for runner user'
-        required: true
-        default: 'P@ssw0rd123'
-
-jobs:
-  rdp:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Desktop and xrdp
+- name: Install Desktop and xrdp
         run: |
           sudo apt-get update -y
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
             xfce4 xfce4-terminal desktop-base xorg dbus-x11 x11-xserver-utils xrdp
-          echo "xfce4-session" > ~/.xsession
           sudo adduser xrdp ssl-cert
-          sudo systemctl enable xrdp
+          echo "exec /usr/bin/xfce4-session" | sudo tee /etc/xrdp/startwm.sh
+          sudo chmod +x /etc/xrdp/startwm.sh
+          echo "xfce4-session" > ~/.xsession
           sudo systemctl restart xrdp
-
-      - name: Set Runner User Password
-        run: |
-          echo "runner:${{ github.event.inputs.user_password }}" | sudo chpasswd
-
-      - name: Download & Setup Ngrok
-        run: |
-          curl -s https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | sudo tar xz -C /usr/local/bin
-          ngrok config add-authtoken ${{ github.event.inputs.ngrok_token }}
-
-      - name: Start Ngrok TCP Tunnel
-        run: |
-          ngrok tcp 3389 --log=stdout &
-          sleep 5
-          echo "==========================================="
-          curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url'
-          echo "==========================================="
-
-      - name: Keep Runner Active
-        run: |
-          echo "RDP tunnel is live! Connect using the URL printed above."
-          sleep 21600
