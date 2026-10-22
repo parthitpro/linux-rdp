@@ -1,37 +1,41 @@
-name: Ubuntu Desktop RDP
+name: Ubuntu Official GNOME RDP
 
 on:
   workflow_dispatch:
+    inputs:
+      crd_auth_code:
+        description: 'Paste Chrome Remote Desktop Auth Command'
+        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Update and Install XFCE Desktop
+      - name: Install Official Ubuntu Desktop (GNOME)
         run: |
           sudo apt-get update -y
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-            xfce4 \
-            xfce4-terminal \
-            desktop-base \
-            xorg \
-            dbus-x11 \
-            x11-xserver-utils
+            ubuntu-desktop-minimal \
+            gnome-terminal \
+            yaru-theme-gnome-shell \
+            yaru-theme-gtk \
+            yaru-theme-icon \
+            dbus-x11
 
       - name: Download & Install Chrome Remote Desktop
         run: |
           wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
           sudo dpkg --install chrome-remote-desktop_current_amd64.deb || sudo apt-get install -f -y
 
-      - name: Configure Desktop Environment
+      - name: Configure GNOME Session for CRD
         run: |
-          sudo bash -c 'echo "exec /etc/X11/Xsession /usr/bin/xfce4-session" > /etc/chrome-remote-desktop-session'
+          sudo bash -c 'echo "exec /etc/X11/Xsession /usr/bin/gnome-session" > /etc/chrome-remote-desktop-session'
 
       - name: Start Chrome Remote Desktop Host
         run: |
-          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0AXlqoi4Yyl_6B7ubi2oIu9pAovCC2jVcy3Z5RdTh3Dmrv9EZcp8dmQuaY8wjNadPOiR4iA" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname) --pin=123456
+          ${{ github.event.inputs.crd_auth_code }} --pin=123456
 
       - name: Keep-Alive Loop
         run: |
-          echo "Ubuntu RDP is now live! PIN is: 123456"
+          echo "Official Ubuntu GNOME RDP is now live! PIN is: 123456"
           sleep 21600
