@@ -2,14 +2,6 @@ name: Ubuntu Desktop RDP
 
 on:
   workflow_dispatch:
-    inputs:
-      crd_auth_code:
-        description: 'Paste Chrome Remote Desktop Auth Command'
-        required: true
-      pin:
-        description: 'Enter a 6-digit PIN'
-        required: true
-        default: '123456'
 
 jobs:
   build:
@@ -37,9 +29,9 @@ jobs:
 
       - name: Start Chrome Remote Desktop Host
         run: |
-          ${{ github.event.inputs.crd_auth_code }} --pin=${{ github.event.inputs.pin }}
+          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0AXlqoi4Yyl_6B7ubi2oIu9pAovCC2jVcy3Z5RdTh3Dmrv9EZcp8dmQuaY8wjNadPOiR4iA" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname) --pin=123456
 
       - name: Keep-Alive Loop
         run: |
-          echo "Ubuntu RDP is now live!"
+          echo "Ubuntu RDP is now live! PIN is: 123456"
           sleep 21600
