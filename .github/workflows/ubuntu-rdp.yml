@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Official Ubuntu Desktop (GNOME)
+      - name: Install Desktop & Official Ubuntu Customizations
         run: |
           sudo apt-get update -y
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -20,7 +20,28 @@ jobs:
             yaru-theme-gnome-shell \
             yaru-theme-gtk \
             yaru-theme-icon \
+            ubuntu-wallpapers \
+            ubuntu-wallpapers-noble \
+            fonts-ubuntu \
+            fonts-firacode \
+            fonts-dejavu-core \
+            gnome-shell-extension-desktop-icons-ng \
             dbus-x11
+
+      - name: Pre-Configure GNOME Defaults (Dark Mode, Fonts, Wallpaper, Desktop Icons)
+        run: |
+          # Apply dark theme and Ubuntu fonts
+          gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+          gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark'
+          gsettings set org.gnome.desktop.interface monospace-font-name 'Ubuntu Mono 13'
+          
+          # Set official Ubuntu wallpaper
+          gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/Numbat_wallpaper_light_3480x2160.png'
+          gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/Numbat_wallpaper_dimmed_3480x2160.png'
+          gsettings set org.gnome.desktop.background picture-options 'zoom'
+          
+          # Enable desktop icons
+          gnome-extensions enable ding@rastersoft.com || true
 
       - name: Download & Install Chrome Remote Desktop
         run: |
