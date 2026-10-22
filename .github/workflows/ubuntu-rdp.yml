@@ -2,10 +2,6 @@ name: Ubuntu Official GNOME RDP
 
 on:
   workflow_dispatch:
-    inputs:
-      crd_auth_code:
-        description: 'Paste Chrome Remote Desktop Auth Command'
-        required: true
 
 jobs:
   build:
@@ -33,7 +29,7 @@ jobs:
 
       - name: Start Chrome Remote Desktop Host
         run: |
-          ${{ github.event.inputs.crd_auth_code }} --pin=123456
+          DISPLAY= /opt/google/chrome-remote-desktop/start-host --code="4/0AXlqoi4Yyl_6B7ubi2oIu9pAovCC2jVcy3Z5RdTh3Dmrv9EZcp8dmQuaY8wjNadPOiR4iA" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname) --pin=123456
 
       - name: Keep-Alive Loop
         run: |
