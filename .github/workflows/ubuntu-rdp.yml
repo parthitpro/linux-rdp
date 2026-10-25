@@ -23,7 +23,7 @@ jobs:
         run: |
           git clone --depth=1 "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" workspace
 
-      - name: Install Desktop, Tools, and Course Utilities
+      - name: Install Desktop & Essential Course Tools
         run: |
           sudo apt-get update -y
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -34,39 +34,17 @@ jobs:
             nautilus \
             gedit \
             gnome-system-monitor \
-            gnome-calculator \
-            gnome-characters \
             yaru-theme-gnome-shell \
             yaru-theme-gtk \
             yaru-theme-icon \
-            ubuntu-wallpapers \
-            ubuntu-wallpapers-noble \
-            fonts-ubuntu \
-            fonts-firacode \
-            fonts-dejavu-core \
             dbus-x11 \
-            git \
             vim \
             ed \
             gawk \
             bc \
             ncal \
             dnsutils \
-            net-tools \
-            iputils-ping \
-            hwinfo \
-            lshw \
-            hdparm \
-            sysstat \
-            build-essential \
-            zip \
-            unzip \
-            bzip2 \
-            p7zip-full \
-            cron \
-            at \
-            curl \
-            wget
+            net-tools
 
           # Move repository workspace directly to Desktop
           mkdir -p /home/runner/Desktop
@@ -82,10 +60,9 @@ jobs:
       - name: Pre-Configure GNOME Defaults with D-Bus Wrapping
         run: |
           dbus-run-session -- bash << 'EOF'
-          # Apply dark theme and Ubuntu Mono typography
+          # Apply dark theme
           gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
           gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark'
-          gsettings set org.gnome.desktop.interface monospace-font-name 'Ubuntu Mono 13'
 
           # Enable Minimize, Maximize, and Close buttons on top-right (Windows style)
           gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
@@ -98,16 +75,11 @@ jobs:
           gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' || true
           gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false || true
           gsettings set org.gnome.shell favorite-apps "['org.gnome.Terminal.desktop', 'google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'gedit.desktop', 'gnome-system-monitor.desktop']" || true
-
-          # Set official Noble background
-          gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/Numbat_wallpaper_dimmed_3480x2160.png'
-          gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/Numbat_wallpaper_dimmed_3480x2160.png'
-          gsettings set org.gnome.desktop.background picture-options 'zoom'
           EOF
 
       - name: Download & Install Chrome Remote Desktop
         run: |
-          wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
+          wget -q https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
           sudo dpkg --install chrome-remote-desktop_current_amd64.deb || sudo apt-get install -f -y
           rm -f chrome-remote-desktop_current_amd64.deb
 
