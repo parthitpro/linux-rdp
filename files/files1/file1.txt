@@ -1,0 +1,6 @@
+-rw-rw-r-- 1 runner runner 0 Oct 26 00:54 qwe1.txt
+-rw-rw-r-- 1 runner runner 0 Oct 26 00:54 qwe2.txt
+-rw-rw-r-- 1 runner runner 0 Oct 26 00:54 qwe3.txt
+-rw-rw-r-- 1 runner runner 0 Oct 26 00:54 qwe4.txt
+-rw-rw-r-- 1 runner runner 0 Oct 26 00:54 qwe5.txt
+-rw-rw-r-- 1 runner runner 0 Oct 26 00:54 qwe6.txt
