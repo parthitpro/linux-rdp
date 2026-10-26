@@ -86,21 +86,14 @@ jobs:
           sudo dpkg --install chrome-remote-desktop_current_amd64.deb || sudo apt-get install -f -y
           rm -f chrome-remote-desktop_current_amd64.deb
 
-      - name: Configure Stable CRD Desktop Session & User Permissions
+      - name: Configure Stable CRD Desktop Session
         run: |
-          # 1. Add runner user to chrome-remote-desktop group
-          sudo usermod -a -G chrome-remote-desktop runner
-
-          # 2. Configure headless GNOME session wrapper
           sudo bash -c 'cat << "EOF" > /etc/chrome-remote-desktop-session
-          unset DBUS_SESSION_BUS_ADDRESS
-          unset SESSION_MANAGER
-          export XDG_SESSION_TYPE=x11
-          export GDK_BACKEND=x11
-          exec /usr/bin/gnome-session --session=ubuntu
+          export LIBGL_ALWAYS_SOFTWARE=1
+          export XDG_CURRENT_DESKTOP=ubuntu:GNOME
+          export GNOME_SHELL_SESSION_MODE=ubuntu
+          exec dbus-run-session -- gnome-session --session=ubuntu
           EOF'
-
-          # 3. Set display resolution
           echo 'export CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES=1920x1080' | sudo tee -a /etc/environment
 
       - name: Start Chrome Remote Desktop Host
