@@ -14,35 +14,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Disable Release Upgrade Notifications & Optimize System
+      - name: Disable Release Upgrade Notifications
         run: |
           sudo sed -i 's/Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
           sudo systemctl mask motd-news.timer 2>/dev/null || true
-          sudo ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
 
       - name: Checkout Same Repository to Workspace (Native Git)
         run: |
           git clone --depth=1 "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" workspace
 
-      - name: Install GNOME Desktop, Xvfb & Tools
+      - name: Install Desktop, Tools, and Course Utilities
         run: |
           sudo apt-get update -y
           sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-            xorg \
-            xvfb \
-            x11-xserver-utils \
-            dbus-x11 \
-            gnome-session \
-            gnome-shell \
+            ubuntu-desktop-minimal \
             gnome-terminal \
             gnome-shell-extension-ubuntu-dock \
             gnome-shell-extension-desktop-icons-ng \
             nautilus \
             gedit \
             gnome-system-monitor \
+            gnome-calculator \
+            gnome-characters \
             yaru-theme-gnome-shell \
             yaru-theme-gtk \
             yaru-theme-icon \
+            ubuntu-wallpapers \
+            ubuntu-wallpapers-noble \
+            fonts-ubuntu \
+            fonts-firacode \
+            fonts-dejavu-core \
+            dbus-x11 \
             vim \
             ed \
             gawk \
@@ -50,9 +52,18 @@ jobs:
             ncal \
             dnsutils \
             net-tools \
-            iputils-ping
+            iputils-ping \
+            lshw \
+            hdparm \
+            sysstat \
+            zip \
+            unzip \
+            bzip2 \
+            p7zip-full \
+            cron \
+            at
 
-          # Place workspace directory directly on Desktop
+          # Move repository workspace directly to Desktop
           mkdir -p /home/runner/Desktop
           mv workspace /home/runner/Desktop/workspace
           chown -R runner:runner /home/runner/Desktop/workspace
@@ -66,34 +77,38 @@ jobs:
       - name: Pre-Configure GNOME Defaults with D-Bus Wrapping
         run: |
           dbus-run-session -- bash << 'EOF'
+          # Apply dark theme and Ubuntu Mono typography
           gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
           gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark'
           gsettings set org.gnome.desktop.interface monospace-font-name 'Ubuntu Mono 13'
-          gsettings set org.gnome.desktop.interface clock-format '12h'
+
+          # Enable Minimize, Maximize, and Close buttons on top-right (Windows style)
           gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
 
+          # Enable extensions
           gnome-extensions enable ding@rastersoft.com || true
           gnome-extensions enable ubuntu-dock@ubuntu.com || true
 
+          # Move dock to BOTTOM and pin Terminal + Chrome + Files
           gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' || true
           gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false || true
           gsettings set org.gnome.shell favorite-apps "['org.gnome.Terminal.desktop', 'google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'gedit.desktop', 'gnome-system-monitor.desktop']" || true
+
+          # Set official Noble background
+          gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/Numbat_wallpaper_dimmed_3480x2160.png'
+          gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/Numbat_wallpaper_dimmed_3480x2160.png'
+          gsettings set org.gnome.desktop.background picture-options 'zoom'
           EOF
 
       - name: Download & Install Chrome Remote Desktop
         run: |
-          wget -q https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
+          wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
           sudo dpkg --install chrome-remote-desktop_current_amd64.deb || sudo apt-get install -f -y
           rm -f chrome-remote-desktop_current_amd64.deb
 
-      - name: Configure Stable CRD Desktop Session
+      - name: Configure GNOME Session and Screen Resolution
         run: |
-          sudo bash -c 'cat << "EOF" > /etc/chrome-remote-desktop-session
-          export LIBGL_ALWAYS_SOFTWARE=1
-          export XDG_CURRENT_DESKTOP=ubuntu:GNOME
-          export GNOME_SHELL_SESSION_MODE=ubuntu
-          exec dbus-run-session -- gnome-session --session=ubuntu
-          EOF'
+          sudo bash -c 'echo "exec /etc/X11/Xsession /usr/bin/gnome-session" > /etc/chrome-remote-desktop-session'
           echo 'export CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES=1920x1080' | sudo tee -a /etc/environment
 
       - name: Start Chrome Remote Desktop Host
